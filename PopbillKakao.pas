@@ -161,22 +161,24 @@ type
 
                 
                 // 알림톡 전송(단건)
-                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String; overload;
+                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String; overload;
 
                 // 알림톡 전송(대량)
                 function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = '') : String; overload;
 
+                
                 // 친구톡 텍스트 전송(단건)
-                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
 
                 // 친구톡 텍스트 전송 (대량)
                 function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
 
+
                 // 친구톡 이미지 전송(단건)
-                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String;  Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
 
                 // 친구톡 이미지 전송(대량)
-                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
 
 
 
@@ -187,7 +189,7 @@ type
                 function GetMessages(CorpNum : String; receiptNum : String; UserID : String = '') : TSentKakaoInfo;
 
                 // 목록조회
-                function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : boolean; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
+                function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
 
                 // 연동회원 전송단가 확인
                 function GetUnitCost(CorpNum : String; KakaoMsgType:EnumKakaoType; UserID : String = '') : Single;
@@ -411,7 +413,7 @@ end;
 
 
 // 목록조회
-function TKakaoService.Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : boolean; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
+function TKakaoService.Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
 var
         responseJson : String;
         uri: String;
@@ -441,8 +443,7 @@ begin
         uri := uri + '&&Page='+IntToStr(Page);
         uri := uri + '&&PerPage=' + IntToStr(Perpage);
 
-        if ReserveYN then uri := uri + '&&ReserveYN=1'
-        else uri := uri+ '&&ReserveYN=0';
+        if ReserveYN <> '' then uri := uri + '&&ReserveYN=' + ReserveYN;
 
         if SenderYN then uri := uri + '&&SenderYN=1'
         else uri := uri +'&&SenderYN=0';
@@ -474,10 +475,11 @@ begin
                         result.list[i].receiveName := getJsonString(jSons[i], 'receiveName');
                         result.list[i].content := getJsonString(jSons[i], 'content');
                         result.list[i].result := getJsonInteger(jSons[i], 'result');
-                        result.list[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.list[i].resultDT := getJsonString(jSons[i], 'resultDT');
                         result.list[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.list[i].altContentType := getJsonInteger(jSons[i], 'altContentType');
                         result.list[i].altResult := getJsonInteger(jSons[i], 'altResult');
+                        result.list[i].altSendDT := getJsonString(jSons[i], 'altSendDT');                        
                         result.list[i].altResultDT := getJsonString(jSons[i], 'altResultDT');
                         result.list[i].contentType := getJsonString(jSons[i], 'contentType');
                 end;
@@ -490,7 +492,7 @@ end;
 
 
 // 알림톡 단건전송
-function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String;
+function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -501,7 +503,7 @@ begin
         Receivers[0].msg := ATSMsg;
         Receivers[0].altmsg := ATSAltMsg;
 
-        result := SendATS(CorpNum, TemplateCode, SenderNum, Content, AltContent, AltSendType, ReserveDT, Receivers, UserID);
+        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID);
 end;
 
 // 알림톡 대량전송
@@ -525,18 +527,16 @@ begin
 
         requestJson := requestJson + '"msgs":[';
         for i := 0 to Length(Receivers) - 1 do begin
-                requestJson := requestJson +
-                        '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'+
-                        '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'+
-                        '"msg":"'+EscapeString(Receivers[i].msg)+'",'+
-                        '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
-
+                requestJson := requestJson
+                        + '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'
+                        + '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'
+                        + '"msg":"'+EscapeString(Receivers[i].msg)+'",'
+                        + '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
         requestJson := requestJson + ']';
 
         requestJson := requestJson + '}';
-
 
         responseJson := httppost('/ATS', CorpNum, UserID, requestJson);
 
@@ -544,7 +544,7 @@ begin
 end;
 
 // 친구톡 텍스트 (단건)
-function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -555,7 +555,7 @@ begin
         Receivers[0].msg := FTSMsg;
         Receivers[0].altmsg := FTSAltMsg;
 
-        result := SendFTS(CorpNum, PlusFriendID, SenderNum, Content, AltContent, AltSendType, ReserveDT, AdsYN, Receivers, Buttons, UserID);
+        result := SendFTS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, Buttons, UserID);
 end;
 
 // 친구톡 텍스트 (대량)
@@ -590,11 +590,11 @@ begin
         end;
         requestJson := requestJson + ']';
 
-        requestJson := requestJson + '"btns":[';
+        requestJson := requestJson + ',"btns":[';
         for i := 0 to Length(Buttons) - 1 do begin
                 requestJson := requestJson +
                         '{"n":"'+EscapeString(Buttons[i].buttonName)+'",'+
-                        '"t:"'+EscapeString(Buttons[i].buttonType)+'",'+
+                        '"t":"'+EscapeString(Buttons[i].buttonType)+'",'+
                         '"u1":"'+EscapeString(Buttons[i].buttonURl1)+'",'+
                         '"u2":"'+EscapeString(Buttons[i].buttonURL2)+'"}';
 
@@ -612,7 +612,7 @@ end;
 
 
 // 친구톡 이미지 (단건)
-function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -623,11 +623,11 @@ begin
         Receivers[0].msg := FTSMsg;
         Receivers[0].altmsg := FTSAltMsg;
 
-        result := SendFMS(CorpNum, PlusFriendID, SenderNum, Content, AltContent, AltSendType, ReserveDT, AdsYN, Receivers, FMSFilePath, Buttons, UserID);
+        result := SendFMS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, FMSFilePath, ImageURL, Buttons, UserID);
 end;
 
 // 친구톡 이미지 (대량)
-function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURl: string; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
 var
         requestJson, responseJson : string;
         i : Integer;
@@ -652,6 +652,7 @@ begin
         if AltContent <> ''         then requestJson := requestJson + '"altContent":"' + EscapeString(AltContent) + '",';
         if AltSendType <> ''         then requestJson := requestJson + '"altSendType":"' + EscapeString(AltSendType) + '",';
         if reserveDT <> ''       then requestJson := requestJson + '"sndDT":"' + EscapeString(reserveDT) + '",';
+        if imageURL <> ''       then requestJson := requestJson + '"imageURL":"' + EscapeString(imageURL) + '",';        
         if adsYN then requestJson := requestJson + '"adsYN":true,';
 
         requestJson := requestJson + '"msgs":[';
@@ -666,11 +667,11 @@ begin
         end;
         requestJson := requestJson + ']';
 
-        requestJson := requestJson + '"btns":[';
+        requestJson := requestJson + ',"btns":[';
         for i := 0 to Length(Buttons) - 1 do begin
                 requestJson := requestJson +
                         '{"n":"'+EscapeString(Buttons[i].buttonName)+'",'+
-                        '"t:"'+EscapeString(Buttons[i].buttonType)+'",'+
+                        '"t":"'+EscapeString(Buttons[i].buttonType)+'",'+
                         '"u1":"'+EscapeString(Buttons[i].buttonURl1)+'",'+
                         '"u2":"'+EscapeString(Buttons[i].buttonURL2)+'"}';
 
