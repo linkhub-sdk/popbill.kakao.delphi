@@ -159,34 +159,40 @@ type
                 function ListATSTemplate(CorpNum : String; UserID : String = '') : TATSTemplateList;
 
 
-                
+
                 // 알림톡 전송(단건)
-                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String; overload;
+                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = ''; RequestNum : String = '') : String; overload;
 
                 // 알림톡 전송(대량)
-                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = '') : String; overload;
+                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = ''; RequestNum : String = '') : String; overload;
 
-                
+
                 // 친구톡 텍스트 전송(단건)
-                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String; overload;
 
                 // 친구톡 텍스트 전송 (대량)
-                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String; overload;
 
 
                 // 친구톡 이미지 전송(단건)
-                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String; overload;
 
                 // 친구톡 이미지 전송(대량)
-                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String; overload;
+                function SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String; overload;
 
 
 
                 // 예약취소
                 function CancelReserve(CorpNum : String; receiptNum : String; UserID : String = '') : TResponse;
 
+                // 예약취소 - 요청번호 할당
+                function CancelReserveRN(CorpNum : String; RequestNum : String; UserID : String = '') : TResponse;
+
                 // 상세내역 및 전송상태 확인
                 function GetMessages(CorpNum : String; receiptNum : String; UserID : String = '') : TSentKakaoInfo;
+
+                // 상세내역 및 전송상태 확인 - 요청번호 할당
+                function GetMessagesRN(CorpNum : String; RequestNum : String; UserID : String = '') : TSentKakaoInfo;
 
                 // 목록조회
                 function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
@@ -335,7 +341,7 @@ begin
                 responseJson := httpget('/KakaoTalk/'+receiptNum+'/Cancel',CorpNum,UserID);
                 result.code := getJsonInteger(responseJson,'code');
                 result.message := getJsonString(responseJson,'message');
-                
+
         except on le : EPopbillException do begin
                 if FIsThrowException then
                 begin
@@ -492,7 +498,7 @@ end;
 
 
 // 알림톡 단건전송
-function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = '') : String;
+function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = ''; RequestNum : String = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -503,35 +509,36 @@ begin
         Receivers[0].msg := ATSMsg;
         Receivers[0].altmsg := ATSAltMsg;
 
-        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID);
+        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID, RequestNum);
 end;
 
 // 알림톡 대량전송
-function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = '') : String;
+function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = ''; RequestNum : String = '') : String;
 var
          requestJson, responseJson : string;
          i : Integer;
 begin
-        if TemplateCode = '' then raise EPopbillException.Create(-99999999, '알림톡 템플릿코드가 입력되지 않았습니다.');
-        if SenderNum = '' then raise EPopbillException.Create(-99999999, '알림톡 발신번호가 입력되지 않았습니다.');
-        if Length(Receivers) = 0 then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+        if TemplateCode      = '' then raise EPopbillException.Create(-99999999, '알림톡 템플릿코드가 입력되지 않았습니다.');
+        if SenderNum         = '' then raise EPopbillException.Create(-99999999, '알림톡 발신번호가 입력되지 않았습니다.');
+        if Length(Receivers) = 0  then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
 
         requestJson := '{';
 
-        if TemplateCode <> ''          then requestJson := requestJson + '"templateCode":"' + EscapeString(TemplateCode) + '",';
-        if SenderNum <> ''          then requestJson := requestJson + '"snd":"' + EscapeString(SenderNum) + '",';
-        if Content <> ''         then requestJson := requestJson + '"content":"' + EscapeString(Content) + '",';
-        if AltContent <> ''         then requestJson := requestJson + '"altContent":"' + EscapeString(AltContent) + '",';
-        if AltSendType <> ''         then requestJson := requestJson + '"altSendType":"' + EscapeString(AltSendType) + '",';        
-        if reserveDT <> ''       then requestJson := requestJson + '"sndDT":"' + EscapeString(reserveDT) + '",';
+        if TemplateCode <> ''  then requestJson := requestJson + '"templateCode":"' + EscapeString(TemplateCode) + '",';
+        if SenderNum    <> ''  then requestJson := requestJson + '"snd":"'          + EscapeString(SenderNum)    + '",';
+        if Content      <> ''  then requestJson := requestJson + '"content":"'      + EscapeString(Content)      + '",';
+        if AltContent   <> ''  then requestJson := requestJson + '"altContent":"'   + EscapeString(AltContent)   + '",';
+        if AltSendType  <> ''  then requestJson := requestJson + '"altSendType":"'  + EscapeString(AltSendType)  + '",';
+        if reserveDT    <> ''  then requestJson := requestJson + '"sndDT":"'        + EscapeString(reserveDT)    + '",';
+        if RequestNum   <> ''  then requestJson := requestJson + '"requestNum":"'   + EscapeString(RequestNum)   + '",';
 
         requestJson := requestJson + '"msgs":[';
         for i := 0 to Length(Receivers) - 1 do begin
                 requestJson := requestJson
-                        + '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'
-                        + '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'
-                        + '"msg":"'+EscapeString(Receivers[i].msg)+'",'
-                        + '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
+                        + '{"rcv":"'   + EscapeString(Receivers[i].rcv)      + '",'
+                        + '"rcvnm":"'  + EscapeString(Receivers[i].rcvnm)    + '",'
+                        + '"msg":"'    + EscapeString(Receivers[i].msg)      + '",'
+                        + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
         requestJson := requestJson + ']';
@@ -544,7 +551,7 @@ begin
 end;
 
 // 친구톡 텍스트 (단건)
-function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -555,27 +562,28 @@ begin
         Receivers[0].msg := FTSMsg;
         Receivers[0].altmsg := FTSAltMsg;
 
-        result := SendFTS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, Buttons, UserID);
+        result := SendFTS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, Buttons, UserID, RequestNum);
 end;
 
 // 친구톡 텍스트 (대량)
-function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDt : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDt : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String;
 var
         requestJson, responseJson : string;
         i : Integer;
 begin
-        if PlusFriendID = '' then raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
-        if SenderNum = '' then raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
-        if Length(Receivers) = 0 then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+        if PlusFriendID      = '' then raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
+        if SenderNum         = '' then raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
+        if Length(Receivers) = 0  then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
 
         requestJson := '{';
 
-        if PlusFriendID <> ''          then requestJson := requestJson + '"plusFriendID":"' + EscapeString(PlusFriendID) + '",';
-        if SenderNum <> ''          then requestJson := requestJson + '"snd":"' + EscapeString(SenderNum) + '",';
-        if Content <> ''         then requestJson := requestJson + '"content":"' + EscapeString(Content) + '",';
-        if AltContent <> ''         then requestJson := requestJson + '"altContent":"' + EscapeString(AltContent) + '",';
-        if AltSendType <> ''         then requestJson := requestJson + '"altSendType":"' + EscapeString(AltSendType) + '",';
-        if reserveDT <> ''       then requestJson := requestJson + '"sndDT":"' + EscapeString(reserveDT) + '",';
+        if PlusFriendID <> ''  then requestJson := requestJson + '"plusFriendID":"' + EscapeString(PlusFriendID) + '",';
+        if SenderNum    <> ''  then requestJson := requestJson + '"snd":"'          + EscapeString(SenderNum)    + '",';
+        if Content      <> ''  then requestJson := requestJson + '"content":"'      + EscapeString(Content)      + '",';
+        if AltContent   <> ''  then requestJson := requestJson + '"altContent":"'   + EscapeString(AltContent)   + '",';
+        if AltSendType  <> ''  then requestJson := requestJson + '"altSendType":"'  + EscapeString(AltSendType)  + '",';
+        if reserveDT    <> ''  then requestJson := requestJson + '"sndDT":"'        + EscapeString(reserveDT)    + '",';
+        if RequestNum   <> ''  then requestJson := requestJson + '"requestNum":"'   + EscapeString(RequestNum)    + '",';
         if adsYN then requestJson := requestJson + '"adsYN":true,';
 
         requestJson := requestJson + '"msgs":[';
@@ -612,7 +620,7 @@ end;
 
 
 // 친구톡 이미지 (단건)
-function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; ReceiverNum : String; ReceiverName : String; FTSMsg : String; FTSAltMsg : String; FMSFilePath : String; ImageURL : String; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String;
 var
         Receivers : TSendKakaoReceiverList;
 begin
@@ -623,11 +631,11 @@ begin
         Receivers[0].msg := FTSMsg;
         Receivers[0].altmsg := FTSAltMsg;
 
-        result := SendFMS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, FMSFilePath, ImageURL, Buttons, UserID);
+        result := SendFMS(CorpNum, PlusFriendID, SenderNum, '', '', AltSendType, ReserveDT, AdsYN, Receivers, FMSFilePath, ImageURL, Buttons, UserID, RequestNum);
 end;
 
 // 친구톡 이미지 (대량)
-function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURl: string; Buttons : TSendKakaoButtonList; UserID : string = '') : String;
+function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURl: string; Buttons : TSendKakaoButtonList; UserID : string = ''; RequestNum : String = '') : String;
 var
         requestJson, responseJson : string;
         i : Integer;
@@ -652,7 +660,8 @@ begin
         if AltContent <> ''         then requestJson := requestJson + '"altContent":"' + EscapeString(AltContent) + '",';
         if AltSendType <> ''         then requestJson := requestJson + '"altSendType":"' + EscapeString(AltSendType) + '",';
         if reserveDT <> ''       then requestJson := requestJson + '"sndDT":"' + EscapeString(reserveDT) + '",';
-        if imageURL <> ''       then requestJson := requestJson + '"imageURL":"' + EscapeString(imageURL) + '",';        
+        if imageURL <> ''       then requestJson := requestJson + '"imageURL":"' + EscapeString(imageURL) + '",';
+        if RequestNum <> ''       then requestJson := requestJson + '"requestNum":"' + EscapeString(RequestNum) + '",';
         if adsYN then requestJson := requestJson + '"adsYN":true,';
 
         requestJson := requestJson + '"msgs":[';
@@ -722,6 +731,89 @@ begin
         end;
 end;
 
+function TKakaoService.GetMessagesRN(CorpNum, RequestNum, UserID: String): TSentKakaoInfo;
+var
+        responseJson : String;
+        jSons : ArrayofString;
+        i : Integer;
+begin
+        if RequestNum = '' then raise EPopbillException.Create(-99999999,'요청번호(RequestNum)가 입력되지 않았습니다');
+
+        responseJson := httpget('/KakaoTalk/Get/'+ RequestNum, CorpNum, UserID);
+
+        try
+                result := TSentKakaoInfo.Create;
+                result.contentType := getJsonString(responseJson, 'contentType');
+                result.templateCode := getJsonString(responseJson, 'templateCode');
+                result.plusFriendID := getJsonString(responseJson, 'plusFriendID');
+                result.sendNum := getJsonString(responseJson, 'sendNum');
+                result.altContent := getJsonString(responseJson, 'altContent');
+                result.altSendType := getJsonString(responseJson, 'altSendType');
+                result.reserveDT := getJsonString(responseJson, 'reserveDT');
+                result.adsYN := getJsonBoolean(responseJson, 'adsYN');
+                result.imageURL := getJsonString(responseJson, 'imageURL');
+                result.sendCnt := getJsonString(responseJson, 'sendCnt');
+                result.successCnt := getJsonString(responseJson, 'successCnt');
+                result.failCnt := getJsonString(responseJson, 'failCnt');
+                result.altCnt := getJsonString(responseJson, 'altCnt');
+                result.cancelCnt := getJsonString(responseJson, 'cancelCnt');
+
+                jSons := getJSonList(responseJson, 'btns');
+                SetLength(result.btns, Length(jSons));
+
+                for i:= 0 to Length(jSons)-1 do
+                begin
+                        result.btns[i] := TSendKakaoButton.Create;
+                        result.btns[i].buttonName := getJSonString(jSons[i],'n');
+                        result.btns[i].buttonType := getJSonString(jSons[i],'t');
+                        result.btns[i].buttonURL1 := getJSonString(jSons[i],'u1');
+                        result.btns[i].buttonURL2 := getJSonString(jSons[i],'u2');
+                end;
+
+                jSons := getJSonList(responseJson, 'msgs');
+                SetLength(result.msgs, Length(jSons));
+
+                for i:= 0 to Length(jSons)-1 do
+                begin
+                        result.msgs[i] := TSentKakaoDetail.Create;
+                        result.msgs[i].state := getJsonInteger(jSons[i],'state');
+                        result.msgs[i].sendDT := getJsonString(jSons[i],'sendDT');
+                        result.msgs[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
+                        result.msgs[i].receiveName := getJsonString(jSons[i], 'receiveName');
+                        result.msgs[i].content := getJsonString(jSons[i], 'content');
+                        result.msgs[i].result := getJsonInteger(jSons[i], 'result');
+                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
+                        result.msgs[i].altContentType := getJsonInteger(jSons[i], 'altContentType');
+                        result.msgs[i].altResult := getJsonInteger(jSons[i], 'altResult');
+                        result.msgs[i].altResultDT := getJsonString(jSons[i], 'altResultDT');
+                end;
+
+        except on E:Exception do
+                raise EPopbillException.Create(-99999999, '결과처리 실패.[Malformed Json]');
+        end;
+end;
+
+function TKakaoService.CancelReserveRN(CorpNum, RequestNum, UserID: String): TResponse;
+var
+        responseJson : String;
+begin
+        if RequestNum = '' then raise EPopbillException.Create(-99999999,'요청번호(RequestNum)가 입력되지 않았습니다');
+        try
+                responseJson := httpget('/KakaoTalk/Cancel/' + RequestNum, CorpNum, UserID);
+                result.code := getJsonInteger(responseJson,'code');
+                result.message := getJsonString(responseJson,'message');
+
+        except on le : EPopbillException do begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(le.code, le.Message);
+                end;
+                result.code := le.code;
+                result.message := le.message;
+                end;
+        end;
+end;
 
 
 // End of Unit
