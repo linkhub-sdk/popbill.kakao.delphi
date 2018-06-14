@@ -650,7 +650,7 @@ begin
         SetLength(files,1);
 
         files[0] := TFile.Create;
-        files[0].FieldName := 'file';
+        files[0].FieldName := 'file';                 
         files[0].FileName := ExtractFileName(FMSFilePath);
         files[0].Data := TFileStream.Create(FMSFilePath,fmOpenRead);
 
