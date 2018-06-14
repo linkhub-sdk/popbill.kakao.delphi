@@ -692,8 +692,14 @@ begin
 
         requestJson := requestJson + '}';
 
-
-        responseJson := httppost('/FMS', CorpNum, UserID, requestJson, files);
+        try
+                responseJson := httppost('/FMS', CorpNum, UserID, requestJson, files);
+        finally
+                for i := 0 to Length(files) -1 do
+                begin
+                        files[i].Data.Free;
+                end;
+        end;
 
         result := getJsonString(responseJson, 'receiptNum');
 end;
