@@ -9,7 +9,7 @@
 * Written : 2018-02-26
 * Updated : 2018-02-27
 * Contributor : Kim Eunhye (code@linkhub.co.kr)
-* Updated : 2018-06-15
+* Updated : 2018-09-18
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -83,18 +83,20 @@ type
         TSentKakaoDetail = class
         public
                 state : integer;
-                contentType : string;
                 sendDT : string;
+                result : integer;
+                resultDT : string;
+                contentType : string;
                 receiveNum : string;
                 receiveName : string;
                 content : string;
-                result : integer;
-                resultDT : string;
-                altContent : string;
                 altContentType : integer;
                 altSendDT : string;
                 altResult : integer;
                 altResultDT : string;
+                altContent : string;
+                receiptNum : String;
+                requestNum : String;
         end;
         TSentKakaoDetailList = Array Of TSentKakaoDetail;
 
@@ -197,7 +199,8 @@ type
                 function GetMessagesRN(CorpNum : String; requestNum : String; UserID : String = '') : TSentKakaoInfo;
 
                 // 목록조회
-                function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
+                function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList; overload;
+                function Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; QString : String; UserID : String): TKakaoSearchList; overload;
 
                 // 연동회원 전송단가 확인
                 function GetUnitCost(CorpNum : String; KakaoMsgType:EnumKakaoType; UserID : String = '') : Single;
@@ -403,15 +406,19 @@ begin
                         result.msgs[i] := TSentKakaoDetail.Create;
                         result.msgs[i].state := getJsonInteger(jSons[i],'state');
                         result.msgs[i].sendDT := getJsonString(jSons[i],'sendDT');
+                        result.msgs[i].result := getJsonInteger(jSons[i], 'result');
+                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.msgs[i].contentType := getJsonString(jSons[i], 'contentType');
                         result.msgs[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
                         result.msgs[i].receiveName := getJsonString(jSons[i], 'receiveName');
                         result.msgs[i].content := getJsonString(jSons[i], 'content');
-                        result.msgs[i].result := getJsonInteger(jSons[i], 'result');
-                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
-                        result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.msgs[i].altContentType := getJsonInteger(jSons[i], 'altContentType');
+                        result.msgs[i].altSendDT := getJsonString(jSons[i], 'altSendDT');
                         result.msgs[i].altResult := getJsonInteger(jSons[i], 'altResult');
                         result.msgs[i].altResultDT := getJsonString(jSons[i], 'altResultDT');
+                        result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
+                        result.msgs[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
+                        result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
 
         except on E:Exception do
@@ -419,9 +426,86 @@ begin
         end;
 end;
 
+function UrlEncodeUTF8(stInput : widestring) : string;
+  const
+    hex : array[0..255] of string = (
+     '%00', '%01', '%02', '%03', '%04', '%05', '%06', '%07',
+     '%08', '%09', '%0a', '%0b', '%0c', '%0d', '%0e', '%0f',
+     '%10', '%11', '%12', '%13', '%14', '%15', '%16', '%17',
+     '%18', '%19', '%1a', '%1b', '%1c', '%1d', '%1e', '%1f',
+     '%20', '%21', '%22', '%23', '%24', '%25', '%26', '%27',
+     '%28', '%29', '%2a', '%2b', '%2c', '%2d', '%2e', '%2f',
+     '%30', '%31', '%32', '%33', '%34', '%35', '%36', '%37',
+     '%38', '%39', '%3a', '%3b', '%3c', '%3d', '%3e', '%3f',
+     '%40', '%41', '%42', '%43', '%44', '%45', '%46', '%47',
+     '%48', '%49', '%4a', '%4b', '%4c', '%4d', '%4e', '%4f',
+     '%50', '%51', '%52', '%53', '%54', '%55', '%56', '%57',
+     '%58', '%59', '%5a', '%5b', '%5c', '%5d', '%5e', '%5f',
+     '%60', '%61', '%62', '%63', '%64', '%65', '%66', '%67',
+     '%68', '%69', '%6a', '%6b', '%6c', '%6d', '%6e', '%6f',
+     '%70', '%71', '%72', '%73', '%74', '%75', '%76', '%77',
+     '%78', '%79', '%7a', '%7b', '%7c', '%7d', '%7e', '%7f',
+     '%80', '%81', '%82', '%83', '%84', '%85', '%86', '%87',
+     '%88', '%89', '%8a', '%8b', '%8c', '%8d', '%8e', '%8f',
+     '%90', '%91', '%92', '%93', '%94', '%95', '%96', '%97',
+     '%98', '%99', '%9a', '%9b', '%9c', '%9d', '%9e', '%9f',
+     '%a0', '%a1', '%a2', '%a3', '%a4', '%a5', '%a6', '%a7',
+     '%a8', '%a9', '%aa', '%ab', '%ac', '%ad', '%ae', '%af',
+     '%b0', '%b1', '%b2', '%b3', '%b4', '%b5', '%b6', '%b7',
+     '%b8', '%b9', '%ba', '%bb', '%bc', '%bd', '%be', '%bf',
+     '%c0', '%c1', '%c2', '%c3', '%c4', '%c5', '%c6', '%c7',
+     '%c8', '%c9', '%ca', '%cb', '%cc', '%cd', '%ce', '%cf',
+     '%d0', '%d1', '%d2', '%d3', '%d4', '%d5', '%d6', '%d7',
+     '%d8', '%d9', '%da', '%db', '%dc', '%dd', '%de', '%df',
+     '%e0', '%e1', '%e2', '%e3', '%e4', '%e5', '%e6', '%e7',
+     '%e8', '%e9', '%ea', '%eb', '%ec', '%ed', '%ee', '%ef',
+     '%f0', '%f1', '%f2', '%f3', '%f4', '%f5', '%f6', '%f7',
+     '%f8', '%f9', '%fa', '%fb', '%fc', '%fd', '%fe', '%ff');
+ var
+   iLen,iIndex : integer;
+   stEncoded : string;
+   ch : widechar;
+ begin
+   iLen := Length(stInput);
+   stEncoded := '';
+   for iIndex := 1 to iLen do
+   begin
+     ch := stInput[iIndex];
+     if (ch >= 'A') and (ch <= 'Z') then
+       stEncoded := stEncoded + ch
+     else if (ch >= 'a') and (ch <= 'z') then
+       stEncoded := stEncoded + ch
+     else if (ch >= '0') and (ch <= '9') then
+       stEncoded := stEncoded + ch
+     else if (ch = ' ') then
+       stEncoded := stEncoded + '+'
+     else if ((ch = '-') or (ch = '_') or (ch = '.') or (ch = '!') or (ch = '*')
+       or (ch = '~') or (ch = '\')  or (ch = '(') or (ch = ')')) then
+       stEncoded := stEncoded + ch
+     else if (Ord(ch) <= $07F) then
+       stEncoded := stEncoded + hex[Ord(ch)]
+     else if (Ord(ch) <= $7FF) then
+     begin
+        stEncoded := stEncoded + hex[$c0 or (Ord(ch) shr 6)];
+        stEncoded := stEncoded + hex[$80 or (Ord(ch) and $3F)];
+     end
+     else
+     begin
+        stEncoded := stEncoded + hex[$e0 or (Ord(ch) shr 12)];
+        stEncoded := stEncoded + hex[$80 or ((Ord(ch) shr 6) and ($3F))];
+        stEncoded := stEncoded + hex[$80 or ((Ord(ch)) and ($3F))];
+     end;
+   end;
+   result := (stEncoded);
+ end;
 
 // 목록조회
 function TKakaoService.Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
+begin
+        Search(CorpNum, SDate, EDate, State, Item, ReserveYN, SenderYN, Page, PerPage, Order, '', UserID);
+end;
+
+function TKakaoService.Search(CorpNum, SDate, EDate: String; State, Item: array of String; ReserveYN: String; SenderYN: boolean; Page, PerPage: Integer; Order, QString, UserID: String): TKakaoSearchList;
 var
         responseJson : String;
         uri: String;
@@ -458,6 +542,8 @@ begin
 
         uri := uri + '&&Order=' + Order;
 
+        if QString <> '' then uri := uri + '&&QString=' + UrlEncodeUTF8(QString);
+
         responseJson := httpget(uri, CorpNum, UserID);
 
 
@@ -479,25 +565,24 @@ begin
                         result.list[i] := TSentKakaoDetail.Create;
                         result.list[i].state := getJsonInteger(jSons[i],'state');
                         result.list[i].sendDT := getJsonString(jSons[i],'sendDT');
+                        result.list[i].result := getJsonInteger(jSons[i], 'result');
+                        result.list[i].resultDT := getJsonString(jSons[i], 'resultDT');
+                        result.list[i].contentType := getJsonString(jSons[i], 'contentType');
                         result.list[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
                         result.list[i].receiveName := getJsonString(jSons[i], 'receiveName');
                         result.list[i].content := getJsonString(jSons[i], 'content');
-                        result.list[i].result := getJsonInteger(jSons[i], 'result');
-                        result.list[i].resultDT := getJsonString(jSons[i], 'resultDT');
-                        result.list[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.list[i].altContentType := getJsonInteger(jSons[i], 'altContentType');
+                        result.list[i].altSendDT := getJsonString(jSons[i], 'altSendDT');
                         result.list[i].altResult := getJsonInteger(jSons[i], 'altResult');
-                        result.list[i].altSendDT := getJsonString(jSons[i], 'altSendDT');                        
                         result.list[i].altResultDT := getJsonString(jSons[i], 'altResultDT');
-                        result.list[i].contentType := getJsonString(jSons[i], 'contentType');
+                        result.list[i].altContent := getJsonString(jSons[i], 'altContent');
+                        result.list[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
+                        result.list[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
         except on E:Exception do
                 raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
         end;
-
 end;
-
-
 
 // 알림톡 단건전송
 function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = ''; requestNum : String = '') : String;
@@ -786,15 +871,19 @@ begin
                         result.msgs[i] := TSentKakaoDetail.Create;
                         result.msgs[i].state := getJsonInteger(jSons[i],'state');
                         result.msgs[i].sendDT := getJsonString(jSons[i],'sendDT');
+                        result.msgs[i].result := getJsonInteger(jSons[i], 'result');
+                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.msgs[i].contentType := getJsonString(jSons[i], 'contentType');
                         result.msgs[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
                         result.msgs[i].receiveName := getJsonString(jSons[i], 'receiveName');
                         result.msgs[i].content := getJsonString(jSons[i], 'content');
-                        result.msgs[i].result := getJsonInteger(jSons[i], 'result');
-                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
-                        result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.msgs[i].altContentType := getJsonInteger(jSons[i], 'altContentType');
+                        result.msgs[i].altSendDT := getJsonString(jSons[i], 'altSendDT');
                         result.msgs[i].altResult := getJsonInteger(jSons[i], 'altResult');
                         result.msgs[i].altResultDT := getJsonString(jSons[i], 'altResultDT');
+                        result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
+                        result.msgs[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
+                        result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
 
         except on E:Exception do
