@@ -153,6 +153,18 @@ type
                 // GetURL
                 function GetURL(CorpNum : String; TOGO: String; UserID: String = '') : String;
 
+                // 플러스친구 계정관리 팝업 URL
+                function GetPlusFriendMgtURL(CorpNum : String; UserID: String) : String;
+
+                // 발신번호 관리 팝업 URL
+                function GetSenderNumberMgtURL(CorpNum : String; UserID: String) : String;
+
+                // 알림톡 템플릿관리 팝업 URL
+                function GetATSTemplateMgtURL(CorpNum : String; UserID: String) : String;
+
+                // 카카오톡 전송내역 팝업 URL
+                function GetSentListURL(CorpNum : String; UserID: String) : String;
+
                 // 플러스친구 목록 확인
                 function ListPlusFriendID(CorpNum : String; UserID : String = '') : TPlusFriendList;
 
@@ -241,6 +253,41 @@ begin
         result := getJsonString(responseJson, 'url');
 end;
 
+// 플러스친구 계정관리 팝업 URL
+function TKakaoService.GetPlusFriendMgtURL(CorpNum : String; UserID : String) : string;
+var
+        responseJson : String;
+begin
+        responseJson := httpget('/KakaoTalk/?TG=PLUSFRIEND', CorpNum, UserID);
+        result := getJsonString(responseJson, 'url');
+end;
+
+// 발신번호 관리 팝업 URL
+function TKakaoService.GetSenderNumberMgtURL(CorpNum : String; UserID : String) : string;
+var
+        responseJson : String;
+begin
+        responseJson := httpget('/Message/?TG=SENDER', CorpNum, UserID);
+        result := getJsonString(responseJson, 'url');
+end;
+
+// 알림톡 템플릿 관리 팝업 URL
+function TKakaoService.GetATSTemplateMgtURL(CorpNum : String; UserID : String) : string;
+var
+        responseJson : String;
+begin
+        responseJson := httpget('/KakaoTalk/?TG=TEMPLATE', CorpNum, UserID);
+        result := getJsonString(responseJson, 'url');
+end;
+
+// 카카오톡 전송내역 팝업 URL
+function TKakaoService.GetSentListURL(CorpNum : String; UserID : String) : string;
+var
+        responseJson : String;
+begin
+        responseJson := httpget('/KakaoTalk/?TG=BOX', CorpNum, UserID);
+        result := getJsonString(responseJson, 'url');
+end;
 
 // 플러스친구 계정 목록
 function TKakaoService.ListPlusFriendID(CorpNum : String; UserID : String = '') : TPlusFriendList;
