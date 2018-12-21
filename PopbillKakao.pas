@@ -364,7 +364,7 @@ begin
                         result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
 
                         // 알림톡 템플릿 버튼
-                        btnjSons := getJSonList(responseJson, 'btns');
+                        btnjSons := getJSonList(jSons[i], 'btns');
                         SetLength(result[i].btns, Length(btnjSons));
 
                         for j:= 0 to Length(btnjSons)-1 do
@@ -375,6 +375,7 @@ begin
                                 result[i].btns[j].buttonURL1 := getJSonString(btnjSons[j],'u1');
                                 result[i].btns[j].buttonURL2 := getJSonString(btnjSons[j],'u2');
                         end;
+                        SetLength(btnjSons,0);
                 end;
         except on E:Exception do
                 raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
