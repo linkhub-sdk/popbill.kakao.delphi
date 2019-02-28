@@ -7,9 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2018-02-27
-* Contributor : Kim Eunhye (code@linkhub.co.kr)
-* Updated : 2018-09-18
+* Updated : 2019-02-28
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -179,8 +177,14 @@ type
                 // 알림톡 전송(단건)
                 function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; UserID : String = ''; requestNum : String = '') : String; overload;
 
+                // 알림톡 전송(단건) - 버튼 추가                
+                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : String = ''; requestNum : String = '') : String; overload;                
+
                 // 알림톡 전송(대량)
                 function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = ''; requestNum : String = '') : String; overload;
+
+                // 알림톡 전송(대량) - 버튼 추가                
+                function SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : String = ''; requestNum : String = '') : String; overload;                
 
 
                 // 친구톡 텍스트 전송(단건)
@@ -647,8 +651,34 @@ begin
         result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID, requestNum);
 end;
 
+// 알림톡 단건전송 - 버튼추가
+function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; AltSendType : String; ReserveDT: String; ReceiverNum : String; ReceiverName : String; ATSMsg : String; ATSAltMsg : String; Buttons : TSendKakaoButtonList; UserID : String = ''; requestNum : String = '') : String;
+var
+        Receivers : TSendKakaoReceiverList;
+begin
+        SetLength(Receivers,1);
+        Receivers[0] := TSendKakaoReceiver.Create;
+        Receivers[0].rcv := ReceiverNum;
+        Receivers[0].rcvnm := ReceiverName;
+        Receivers[0].msg := ATSMsg;
+        Receivers[0].altmsg := ATSAltMsg;
+
+        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID, requestNum);
+end;
+
 // 알림톡 대량전송
 function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; UserID : String = ''; requestNum : String = '') : String;
+var
+        Buttons : TSendKakaoButtonList;
+begin
+        SetLength(Buttons, 0);
+        result := SendATS(CorpNum, TemplateCode, SenderNum, Content, AltContent, AltSendType, ReserveDT, Receivers, Buttons, UserID, requestNum); 
+
+end;
+
+
+// 알림톡 대량전송
+function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : String = ''; requestNum : String = '' ) : String;
 var
          requestJson, responseJson : string;
          i : Integer;
