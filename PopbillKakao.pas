@@ -663,7 +663,7 @@ begin
         Receivers[0].msg := ATSMsg;
         Receivers[0].altmsg := ATSAltMsg;
 
-        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, UserID, requestNum);
+        result := SendATS(CorpNum, TemplateCode, SenderNum, '', '', AltSendType, ReserveDT, Receivers, Buttons, UserID, requestNum);
 end;
 
 // 알림톡 대량전송
@@ -706,7 +706,24 @@ begin
                         + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
+
         requestJson := requestJson + ']';
+                
+        if Length(Buttons) > 0 then
+        begin
+                requestJson := requestJson + ',"btns":[';
+                for i := 0 to Length(Buttons) - 1 do begin
+                        requestJson := requestJson +
+                                '{"n":"'+EscapeString(Buttons[i].buttonName)+'",'+
+                                '"t":"'+EscapeString(Buttons[i].buttonType)+'",'+
+                                '"u1":"'+EscapeString(Buttons[i].buttonURl1)+'",'+
+                                '"u2":"'+EscapeString(Buttons[i].buttonURL2)+'"}';
+
+                        if i < Length(Buttons) - 1 then requestJson := requestJson + ',';
+                end;
+                requestJson := requestJson + ']';                
+        end;
+
 
         requestJson := requestJson + '}';
 
