@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2019-02-28
+* Updated : 2019-03-21
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -248,13 +248,24 @@ function TKakaoService.GetURL(CorpNum : String; TOGO : String; UserID : String) 
 var
         responseJson : String;
 begin
-        // 발신번호 관리 팝업
-        if TOGO = 'SENDER' then
-                responseJson := httpget('/Message/?TG='+TOGO, CorpNum, UserID)
-        else
-                responseJson := httpget('/KakaoTalk/?TG='+TOGO, CorpNum, UserID);
 
-        result := getJsonString(responseJson, 'url');
+        try
+                // 발신번호 관리 팝업
+                if TOGO = 'SENDER' then
+                        responseJson := httpget('/Message/?TG='+TOGO, CorpNum, UserID)
+                else
+                        responseJson := httpget('/KakaoTalk/?TG='+TOGO, CorpNum, UserID);
+
+                result := getJsonString(responseJson, 'url');
+        except
+                on le : EPopbillexception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                        end;
+
+                end;
+        end;
 end;
 
 // 플러스친구 계정관리 팝업 URL
@@ -262,8 +273,18 @@ function TKakaoService.GetPlusFriendMgtURL(CorpNum : String; UserID : String) : 
 var
         responseJson : String;
 begin
-        responseJson := httpget('/KakaoTalk/?TG=PLUSFRIEND', CorpNum, UserID);
-        result := getJsonString(responseJson, 'url');
+        try
+                responseJson := httpget('/KakaoTalk/?TG=PLUSFRIEND', CorpNum, UserID);
+                result := getJsonString(responseJson, 'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 // 발신번호 관리 팝업 URL
@@ -271,8 +292,18 @@ function TKakaoService.GetSenderNumberMgtURL(CorpNum : String; UserID : String) 
 var
         responseJson : String;
 begin
-        responseJson := httpget('/Message/?TG=SENDER', CorpNum, UserID);
-        result := getJsonString(responseJson, 'url');
+        try
+                responseJson := httpget('/Message/?TG=SENDER', CorpNum, UserID);
+                result := getJsonString(responseJson, 'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 // 알림톡 템플릿 관리 팝업 URL
@@ -280,8 +311,18 @@ function TKakaoService.GetATSTemplateMgtURL(CorpNum : String; UserID : String) :
 var
         responseJson : String;
 begin
-        responseJson := httpget('/KakaoTalk/?TG=TEMPLATE', CorpNum, UserID);
-        result := getJsonString(responseJson, 'url');
+        try
+                responseJson := httpget('/KakaoTalk/?TG=TEMPLATE', CorpNum, UserID);
+                result := getJsonString(responseJson, 'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 // 카카오톡 전송내역 팝업 URL
@@ -289,8 +330,18 @@ function TKakaoService.GetSentListURL(CorpNum : String; UserID : String) : strin
 var
         responseJson : String;
 begin
-        responseJson := httpget('/KakaoTalk/?TG=BOX', CorpNum, UserID);
-        result := getJsonString(responseJson, 'url');
+        try
+                responseJson := httpget('/KakaoTalk/?TG=BOX', CorpNum, UserID);
+                result := getJsonString(responseJson, 'url');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 // 플러스친구 계정 목록
@@ -300,22 +351,58 @@ var
         jSons : ArrayOfString;
         i : Integer;
 begin
-        responseJson := httpget('/KakaoTalk/ListPlusFriendID',CorpNum, UserID);
-
         try
-
-                jSons := ParseJsonList(responseJson);
-                SetLength(result,Length(jSons));
-
-                for i:=0 to Length(jSons)-1 do
-                begin
-                        result[i] := TPlusFriendInfo.Create;
-                        result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
-                        result[i].plusFriendName := getJsonString(jSons[i], 'plusFriendName');
-                        result[i].regDT := getJsonString(jSons[i], 'regDT');
+                responseJson := httpget('/KakaoTalk/ListPlusFriendID',CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                SetLength(result,0);
+                                SetLength(jSons,0);
+                                exit;
+                        end;
                 end;
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                try
+                        jSons := ParseJsonList(responseJson);
+                        SetLength(result,Length(jSons));
+
+                        for i:=0 to Length(jSons)-1 do
+                        begin
+                                result[i] := TPlusFriendInfo.Create;
+                                result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
+                                result[i].plusFriendName := getJsonString(jSons[i], 'plusFriendName');
+                                result[i].regDT := getJsonString(jSons[i], 'regDT');
+                        end;
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        SetLength(result,0);
+                                        SetLength(jSons,0);
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
         end;
 end;
 
@@ -327,21 +414,59 @@ var
         i : Integer;
 begin
 
-        responseJson := httpget('/Message/SenderNumber',CorpNum, UserID);
 
         try
-                jSons := ParseJsonList(responseJson);
-                SetLength(result,Length(jSons));
-
-                for i:= 0 to Length(jSons)-1 do
-                begin
-                        result[i] := TKakaoSenderNumber.Create;
-                        result[i].number := getJsonString(jSons[i],'number');
-                        result[i].state := getJsonInteger(jSons[i],'state');
-                        result[i].representYN := getJsonBoolean(jSons[i],'representYN');
+                responseJson := httpget('/Message/SenderNumber',CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                SetLength(result,0);
+                                SetLength(jSons,0);
+                                exit;
+                        end;
                 end;
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                try
+                        jSons := ParseJsonList(responseJson);
+                        SetLength(result,Length(jSons));
+
+                        for i:= 0 to Length(jSons)-1 do
+                        begin
+                                result[i] := TKakaoSenderNumber.Create;
+                                result[i].number := getJsonString(jSons[i],'number');
+                                result[i].state := getJsonInteger(jSons[i],'state');
+                                result[i].representYN := getJsonBoolean(jSons[i],'representYN');
+                        end;
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        SetLength(result,0);
+                                        SetLength(jSons,0);
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
         end;
 end;
 
@@ -353,7 +478,30 @@ var
         i, j: Integer;
 
 begin
-        responseJson := httpget('/KakaoTalk/ListATSTemplate', CorpNum, UserID);
+        try
+                responseJson := httpget('/KakaoTalk/ListATSTemplate', CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                SetLength(result,0);
+                                SetLength(jSons,0);
+                                exit;
+                        end;
+                end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
 
         try
                 jSons := ParseJsonList(responseJson);
@@ -381,32 +529,76 @@ begin
                         end;
                         SetLength(btnjSons,0);
                 end;
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        except
+                on E:Exception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                exit;
+                        end
+                        else
+                        begin
+                                SetLength(result,0);
+                                SetLength(jSons,0);
+                                setLastErrCode(-99999999);
+                                setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                exit;
+                        end;
+                end;
 
         end;
+        end;
 end;
-
-
+               
 // 예약전송 취소
 function TKakaoService.CancelReserve(CorpNum : String; receiptNum : String; UserID : String = '') : TResponse;
 var
         responseJson : String;
 begin
-        if receiptNum = '' then raise EPopbillException.Create(-99999999,'접수번호가 입력되지 않았습니다');
-        try
-                responseJson := httpget('/KakaoTalk/'+receiptNum+'/Cancel',CorpNum,UserID);
-                result.code := getJsonInteger(responseJson,'code');
-                result.message := getJsonString(responseJson,'message');
-
-        except on le : EPopbillException do begin
+        if receiptNum = '' then
+        begin
                 if FIsThrowException then
                 begin
-                        raise EPopbillException.Create(le.code, le.Message);
+                        raise EPopbillException.Create(-99999999,'접수번호가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '접수번호가 입력되지 않았습니다';
+                        exit;
                 end;
-                result.code := le.code;
-                result.message := le.message;
+        end;
+        
+        try
+                responseJson := httpget('/KakaoTalk/'+receiptNum+'/Cancel',CorpNum,UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
+                        end;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+                result.code := getJsonInteger(responseJson,'code');
+                result.message := getJsonString(responseJson,'message');
+                exit;
         end;
 end;
 
@@ -417,10 +609,45 @@ var
         jSons : ArrayofString;
         i : Integer;
 begin
-        if receiptNum = '' then raise EPopbillException.Create(-99999999,'접수번호가 입력되지 않았습니다');
+        if receiptNum = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999,'접수번호가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result := TSentKakaoInfo.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('접수번호가 입력되지 않았습니다');
+                        exit;
+                end;
+        end;
 
-        responseJson := httpget('/KakaoTalk/'+receiptNum, CorpNum, UserID);
+        try
+                responseJson := httpget('/KakaoTalk/'+receiptNum, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TSentKakaoInfo.Create;
+                                exit;
+                        end;
+                end;
+        end;
 
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
         try
                 result := TSentKakaoInfo.Create;
                 result.contentType := getJsonString(responseJson, 'contentType');
@@ -473,8 +700,22 @@ begin
                         result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
 
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999, '결과처리 실패.[Malformed Json]');
+        except
+                on E:Exception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(-99999999, '결과처리 실패.[Malformed Json]');
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TSentKakaoInfo.Create();
+                                setLastErrCode(-99999999);
+                                setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                exit;
+                        end;
+                end;
+        end;
         end;
 end;
 
@@ -596,9 +837,37 @@ begin
 
         if QString <> '' then uri := uri + '&&QString=' + UrlEncodeUTF8(QString);
 
-        responseJson := httpget(uri, CorpNum, UserID);
+        
+        try
+                responseJson := httpget(uri, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result:= TKakaoSearchList.Create;
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
+                        end;
+                end;
+        end;
 
 
+        if LastErrCode <> 0 then
+        begin
+                result := TKakaoSearchList.Create;
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+        
         result := TKakaoSearchList.Create;
 
         result.code := getJsonInteger(responseJson, 'code');
@@ -631,8 +900,22 @@ begin
                         result.list[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
                         result.list[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        except
+                on E:Exception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TKakaoSearchList.Create;
+                                result.code := -99999999;
+                                result.message := '결과처리 실패.[Malformed Json]';
+                                exit; 
+                        end;
+                end;
+        end;
         end;
 end;
 
@@ -683,9 +966,55 @@ var
          requestJson, responseJson : string;
          i : Integer;
 begin
-        if TemplateCode      = '' then raise EPopbillException.Create(-99999999, '알림톡 템플릿코드가 입력되지 않았습니다.');
-        if SenderNum         = '' then raise EPopbillException.Create(-99999999, '알림톡 발신번호가 입력되지 않았습니다.');
-        if Length(Receivers) = 0  then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+        
+        if TemplateCode = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '알림톡 템플릿코드가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('알림톡 템플릿코드가 입력되지 않았습니다.');
+                        exit;                        
+                end;
+        end;
+        
+        if SenderNum = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '알림톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('알림톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+        
+        if Length(Receivers) = 0 then
+        begin
+                if FIsThrowException then
+                begin
+                         raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+                         exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('수신정보배열이 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+        
 
         requestJson := '{';
 
@@ -727,9 +1056,18 @@ begin
 
         requestJson := requestJson + '}';
 
-        responseJson := httppost('/ATS', CorpNum, UserID, requestJson);
-
-        result := getJsonString(responseJson, 'receiptNum');
+        try
+                responseJson := httppost('/ATS', CorpNum, UserID, requestJson);
+                result := getJsonString(responseJson, 'receiptNum');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 // 친구톡 텍스트 (단건)
@@ -753,9 +1091,54 @@ var
         requestJson, responseJson : string;
         i : Integer;
 begin
-        if PlusFriendID      = '' then raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
-        if SenderNum         = '' then raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
-        if Length(Receivers) = 0  then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+
+        if SenderNum = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('친구톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+
+        if Length(Receivers) = 0 then
+        begin
+                if FIsThrowException then
+                begin
+                         raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+                         exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('수신정보배열이 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+        
+        if PlusFriendID = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('플러스친구 아이디가 입력되지 않았습니다.');
+                        exit;                        
+                end;
+        end;
 
         requestJson := '{';
 
@@ -794,10 +1177,18 @@ begin
 
         requestJson := requestJson + '}';
 
-
-        responseJson := httppost('/FTS', CorpNum, UserID, requestJson);
-
-        result := getJsonString(responseJson, 'receiptNum');
+        try
+                responseJson := httppost('/FTS', CorpNum, UserID, requestJson);
+                result := getJsonString(responseJson, 'receiptNum');
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end;
+                end;
+        end;
 end;
 
 
@@ -823,9 +1214,53 @@ var
         i : Integer;
         files : TFileList;
 begin
-        if PlusFriendID = '' then raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
-        if SenderNum = '' then raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
-        if Length(Receivers) = 0 then raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+        if SenderNum = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '친구톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('친구톡 발신번호가 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+
+        if Length(Receivers) = 0 then
+        begin
+                if FIsThrowException then
+                begin
+                         raise EPopbillException.Create(-99999999, '수신정보배열이 입력되지 않았습니다.');
+                         exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('수신정보배열이 입력되지 않았습니다.');
+                        exit;
+                end;
+        end;
+        
+        if PlusFriendID = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999, '플러스친구 아이디가 입력되지 않았습니다.');
+                        exit;
+                end
+                else
+                begin
+                        result := '';
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('플러스친구 아이디가 입력되지 않았습니다.');
+                        exit;                        
+                end;
+        end;
 
         SetLength(files,1);
 
@@ -873,7 +1308,18 @@ begin
         requestJson := requestJson + '}';
 
         try
-                responseJson := httppost('/FMS', CorpNum, UserID, requestJson, files);
+                try
+                        responseJson := httppost('/FMS', CorpNum, UserID, requestJson, files);
+                        result := getJsonString(responseJson, 'receiptNum');                        
+                except
+                        on le : EPopbillException do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(le.code, le.message);
+                                        exit;
+                                end;
+                        end;
+                end;
         finally
                 for i := 0 to Length(files) -1 do
                 begin
@@ -881,7 +1327,6 @@ begin
                 end;
         end;
 
-        result := getJsonString(responseJson, 'receiptNum');
 end;
 
 
@@ -890,14 +1335,32 @@ function TKakaoService.GetUnitCost(CorpNum : String; KakaoMsgType:EnumKakaoType;
 var
         responseJson : String;
 begin
-        responseJson := httpget('/KakaoTalk/UnitCost?Type='+GetEnumName(TypeInfo(EnumKakaoType),integer(KakaoMsgType)), CorpNum, UserID);
 
-        try
-                result := strToFloat(getJsonString(responseJson, 'unitCost'));
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        try 
+                responseJson := httpget('/KakaoTalk/UnitCost?Type='+GetEnumName(TypeInfo(EnumKakaoType),integer(KakaoMsgType)), CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := 0.0;
+                                exit;
+                        end;
+                end;
         end;
 
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+                result := strToFloat(getJsonString(responseJson, 'unitCost'));
+        end;
 end;
 
 // 과금정보 조회
@@ -905,7 +1368,24 @@ function TKakaoService.GetChargeInfo(CorpNum : String; KakaoMsgType:EnumKakaoTyp
 var
         responseJson : String;
 begin
-        responseJson := httpget('/KakaoTalk/ChargeInfo?Type='+GetEnumName(TypeInfo(EnumKakaoType),integer(KakaoMsgType)), CorpNum, UserID);
+        try
+                responseJson := httpget('/KakaoTalk/ChargeInfo?Type='+GetEnumName(TypeInfo(EnumKakaoType),integer(KakaoMsgType)), CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end;
+                end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
 
         try
                 result := TKakaoChargeInfo.Create;
@@ -914,8 +1394,22 @@ begin
                 result.chargeMethod := getJSonString(responseJson, 'chargeMethod');
                 result.rateSystem := getJSonString(responseJson, 'rateSystem');
 
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+        except
+                on E:Exception do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TKakaoChargeInfo.Create;
+                                setLastErrCode(-99999999);
+                                setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                exit;
+                        end;
+                end;
+        end;
         end;
 end;
 
@@ -925,7 +1419,23 @@ var
         jSons : ArrayofString;
         i : Integer;
 begin
-        if requestNum = '' then raise EPopbillException.Create(-99999999,'요청번호(requestNum)가 입력되지 않았습니다');
+        if requestNum = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999,'요청번호(requestNum)가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result := TSentKakaoInfo.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('요청번호(requestNum)가 입력되지 않았습니다');
+                        exit;
+                end;
+        end;
+
+        try
 
         responseJson := httpget('/KakaoTalk/Get/'+ requestNum, CorpNum, UserID);
 
@@ -981,8 +1491,34 @@ begin
                         result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
                 end;
 
-        except on E:Exception do
-                raise EPopbillException.Create(-99999999, '결과처리 실패.[Malformed Json]');
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999, '결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := TSentKakaoInfo.Create;
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                        end
+                        else
+                        begin
+                                result := TSentKakaoInfo.Create();
+                                exit;
+                        end;
+                end;
         end;
 end;
 
@@ -990,20 +1526,50 @@ function TKakaoService.CancelReserveRN(CorpNum, requestNum, UserID: String): TRe
 var
         responseJson : String;
 begin
-        if requestNum = '' then raise EPopbillException.Create(-99999999,'요청번호(requestNum)가 입력되지 않았습니다');
-        try
-                responseJson := httpget('/KakaoTalk/Cancel/' + requestNum, CorpNum, UserID);
-                result.code := getJsonInteger(responseJson,'code');
-                result.message := getJsonString(responseJson,'message');
-
-        except on le : EPopbillException do begin
+        if requestNum = '' then
+        begin
                 if FIsThrowException then
                 begin
-                        raise EPopbillException.Create(le.code, le.Message);
+                        raise EPopbillException.Create(-99999999,'요청번호(requestNum)가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '요청번호(requestNum)가 입력되지 않았습니다'; 
+                        exit;
                 end;
-                result.code := le.code;
-                result.message := le.message;
+        end;
+
+        try
+                responseJson := httpget('/KakaoTalk/Cancel/' + requestNum, CorpNum, UserID);
+
+
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
+                        end;
                 end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+        end
+        else
+        begin
+                result.code := getJsonInteger(responseJson,'code');
+                result.message := getJsonString(responseJson,'message');
         end;
 end;
 
