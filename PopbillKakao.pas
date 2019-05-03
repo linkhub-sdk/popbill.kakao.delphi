@@ -795,7 +795,7 @@ function UrlEncodeUTF8(stInput : widestring) : string;
 // 목록조회
 function TKakaoService.Search(CorpNum : String; SDate: String; EDate : String; State : Array Of String; Item : Array Of String; ReserveYN : String; SenderYN : boolean; Page : Integer; PerPage : Integer; Order : String; UserID : String = ''): TKakaoSearchList;
 begin
-        Search(CorpNum, SDate, EDate, State, Item, ReserveYN, SenderYN, Page, PerPage, Order, '', UserID);
+        result := Search(CorpNum, SDate, EDate, State, Item, ReserveYN, SenderYN, Page, PerPage, Order, '', UserID);
 end;
 
 function TKakaoService.Search(CorpNum, SDate, EDate: String; State, Item: array of String; ReserveYN: String; SenderYN: boolean; Page, PerPage: Integer; Order, QString, UserID: String): TKakaoSearchList;
