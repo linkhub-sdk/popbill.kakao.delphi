@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2019-05-03
+* Updated : 2020-07-22
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -59,6 +59,7 @@ type
                 rcvnm : string;
                 msg : string;
                 altmsg : string;
+                interOPRefKey : string;
         end;
 
         TSendKakaoReceiverList = Array Of TSendKakaoReceiver;
@@ -95,6 +96,7 @@ type
                 altContent : string;
                 receiptNum : String;
                 requestNum : String;
+                interOPRefKey : String;
         end;
         TSentKakaoDetailList = Array Of TSentKakaoDetail;
 
@@ -698,6 +700,7 @@ begin
                         result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.msgs[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
                         result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
+                        result.msgs[i].interOPRefKey := getJsonString(jSons[i], 'interOPRefKey');                        
                 end;
 
         except
@@ -899,6 +902,7 @@ begin
                         result.list[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.list[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
                         result.list[i].requestNum := getJsonString(jSons[i], 'requestNum');
+                        result.list[i].interOPRefKey := getJsonString(jSons[i], 'interOPRefKey');                        
                 end;
         except
                 on E:Exception do begin
@@ -1032,6 +1036,7 @@ begin
                         + '{"rcv":"'   + EscapeString(Receivers[i].rcv)      + '",'
                         + '"rcvnm":"'  + EscapeString(Receivers[i].rcvnm)    + '",'
                         + '"msg":"'    + EscapeString(Receivers[i].msg)      + '",'
+                        + '"interOPRefKey":"'    + EscapeString(Receivers[i].interOPRefKey)      + '",'                        
                         + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
@@ -1157,6 +1162,7 @@ begin
                         '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'+
                         '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'+
                         '"msg":"'+EscapeString(Receivers[i].msg)+'",'+
+                        '"interOPRefKey":"'+EscapeString(Receivers[i].interOPRefKey)+'",'+                        
                         '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
 
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
@@ -1287,6 +1293,7 @@ begin
                         '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'+
                         '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'+
                         '"msg":"'+EscapeString(Receivers[i].msg)+'",'+
+                        '"interOPRefKey":"'+EscapeString(Receivers[i].interOPRefKey)+'",'+                        
                         '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
 
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
@@ -1489,6 +1496,8 @@ begin
                         result.msgs[i].altContent := getJsonString(jSons[i], 'altContent');
                         result.msgs[i].receiptNum := getJsonString(jSons[i], 'receiptNum');
                         result.msgs[i].requestNum := getJsonString(jSons[i], 'requestNum');
+                        result.msgs[i].interOPRefKey := getJsonString(jSons[i], 'interOPRefKey');
+                      
                 end;
 
                 except
