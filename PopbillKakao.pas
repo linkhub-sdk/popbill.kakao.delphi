@@ -52,17 +52,8 @@ type
         TKakaoSenderNumberList = Array of TKakaoSenderNumber;
 
 
-        // 전송요청 - 수신정보/메시지 내용
-        TSendKakaoReceiver = class
-        public
-                rcv : string;
-                rcvnm : string;
-                msg : string;
-                altmsg : string;
-                interOPRefKey : string;
-        end;
+        
 
-        TSendKakaoReceiverList = Array Of TSendKakaoReceiver;
 
 
         // 전송요청 - 친구톡 버튼 정보
@@ -77,6 +68,19 @@ type
         TSendKakaoButtonList = Array Of TSendKakaoButton;
 
 
+        // 전송요청 - 수신정보/메시지 내용
+        TSendKakaoReceiver = class
+        public
+                rcv : string;
+                rcvnm : string;
+                msg : string;
+                altmsg : string;
+                interOPRefKey : string;
+                buttonList : TSendKakaoButtonList;
+        end;
+
+        
+        TSendKakaoReceiverList = Array Of TSendKakaoReceiver;
 
         // 전송결과 정보 Detail 배열
         TSentKakaoDetail = class
@@ -968,7 +972,7 @@ end;
 function TKakaoService.SendATS(CorpNum : String; TemplateCode : String; SenderNum : String; Content : String; AltContent: String; AltSendType : String; ReserveDT: String; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : String = ''; requestNum : String = '' ) : String;
 var
          requestJson, responseJson : string;
-         i : Integer;
+         i,j  : Integer;
 begin
         
         if TemplateCode = '' then
@@ -1036,8 +1040,25 @@ begin
                         + '{"rcv":"'   + EscapeString(Receivers[i].rcv)      + '",'
                         + '"rcvnm":"'  + EscapeString(Receivers[i].rcvnm)    + '",'
                         + '"msg":"'    + EscapeString(Receivers[i].msg)      + '",'
-                        + '"interOPRefKey":"'    + EscapeString(Receivers[i].interOPRefKey)      + '",'                        
-                        + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
+                        + '"interOPRefKey":"'    + EscapeString(Receivers[i].interOPRefKey)      + '",';
+
+                if Length(Receivers[i].buttonList) > 0 then
+                begin
+                requestJson := requestJson + '"btns":[';
+                for j := 0 to Length(Receivers[i].buttonList) - 1 do begin
+                        requestJson := requestJson +
+                               '{"n":"'+EscapeString(Receivers[i].buttonList[j].buttonName)+'",'+
+                               '"t":"'+EscapeString(Receivers[i].buttonList[j].buttonType)+'",'+
+                               '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
+                               '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
+
+                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                end;
+
+                requestJson := requestJson + '],';                
+        end;
+
+                requestJson := requestJson + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
 
@@ -1094,7 +1115,7 @@ end;
 function TKakaoService.SendFTS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDt : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; Buttons : TSendKakaoButtonList; UserID : string = ''; requestNum : String = '') : String;
 var
         requestJson, responseJson : string;
-        i : Integer;
+        i,j: Integer;
 begin
 
         if SenderNum = '' then
@@ -1158,15 +1179,32 @@ begin
 
         requestJson := requestJson + '"msgs":[';
         for i := 0 to Length(Receivers) - 1 do begin
-                requestJson := requestJson +
-                        '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'+
-                        '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'+
-                        '"msg":"'+EscapeString(Receivers[i].msg)+'",'+
-                        '"interOPRefKey":"'+EscapeString(Receivers[i].interOPRefKey)+'",'+                        
-                        '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
+                requestJson := requestJson
+                        + '{"rcv":"'   + EscapeString(Receivers[i].rcv)      + '",'
+                        + '"rcvnm":"'  + EscapeString(Receivers[i].rcvnm)    + '",'
+                        + '"msg":"'    + EscapeString(Receivers[i].msg)      + '",'
+                        + '"interOPRefKey":"'    + EscapeString(Receivers[i].interOPRefKey)      + '",';
 
+                if Length(Receivers[i].buttonList) > 0 then
+                begin
+                requestJson := requestJson + '"btns":[';
+                for j := 0 to Length(Receivers[i].buttonList) - 1 do begin
+                        requestJson := requestJson +
+                               '{"n":"'+EscapeString(Receivers[i].buttonList[j].buttonName)+'",'+
+                               '"t":"'+EscapeString(Receivers[i].buttonList[j].buttonType)+'",'+
+                               '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
+                               '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
+
+                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                end;
+
+                requestJson := requestJson + '],';                
+        end;
+
+                requestJson := requestJson + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
+
         requestJson := requestJson + ']';
 
         requestJson := requestJson + ',"btns":[';
@@ -1217,7 +1255,7 @@ end;
 function TKakaoService.SendFMS(CorpNum : String; PlusFriendID : String; SenderNum : String; Content : String; AltContent : String; AltSendType : String; ReserveDT : String; AdsYN : Boolean; Receivers : TSendKakaoReceiverList; FMSFilePath : String; ImageURl: string; Buttons : TSendKakaoButtonList; UserID : string = ''; requestNum : String = '') : String;
 var
         requestJson, responseJson : string;
-        i : Integer;
+        i,j : Integer;
         files : TFileList;
 begin
         if SenderNum = '' then
@@ -1287,17 +1325,34 @@ begin
         if requestNum <> ''       then requestJson := requestJson + '"requestNum":"' + EscapeString(requestNum) + '",';
         if adsYN then requestJson := requestJson + '"adsYN":true,';
 
-        requestJson := requestJson + '"msgs":[';
+       requestJson := requestJson + '"msgs":[';
         for i := 0 to Length(Receivers) - 1 do begin
-                requestJson := requestJson +
-                        '{"rcv":"'+EscapeString(Receivers[i].rcv)+'",'+
-                        '"rcvnm":"'+EscapeString(Receivers[i].rcvnm)+'",'+
-                        '"msg":"'+EscapeString(Receivers[i].msg)+'",'+
-                        '"interOPRefKey":"'+EscapeString(Receivers[i].interOPRefKey)+'",'+                        
-                        '"altmsg":"'+EscapeString(Receivers[i].altmsg)+'"}';
+                requestJson := requestJson
+                        + '{"rcv":"'   + EscapeString(Receivers[i].rcv)      + '",'
+                        + '"rcvnm":"'  + EscapeString(Receivers[i].rcvnm)    + '",'
+                        + '"msg":"'    + EscapeString(Receivers[i].msg)      + '",'
+                        + '"interOPRefKey":"'    + EscapeString(Receivers[i].interOPRefKey)      + '",';
 
+                if Length(Receivers[i].buttonList) > 0 then
+                begin
+                requestJson := requestJson + '"btns":[';
+                for j := 0 to Length(Receivers[i].buttonList) - 1 do begin
+                        requestJson := requestJson +
+                               '{"n":"'+EscapeString(Receivers[i].buttonList[j].buttonName)+'",'+
+                               '"t":"'+EscapeString(Receivers[i].buttonList[j].buttonType)+'",'+
+                               '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
+                               '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
+
+                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                end;
+
+                requestJson := requestJson + '],';                
+        end;
+
+                requestJson := requestJson + '"altmsg":"' + EscapeString(Receivers[i].altmsg)   + '"}';
                 if i < Length(Receivers) - 1 then requestJson := requestJson + ',';
         end;
+
         requestJson := requestJson + ']';
 
         requestJson := requestJson + ',"btns":[';
