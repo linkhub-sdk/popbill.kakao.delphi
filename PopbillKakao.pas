@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2020-07-22
+* Updated : 2021-03-08
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -692,7 +692,7 @@ begin
                         result.msgs[i].state := getJsonInteger(jSons[i],'state');
                         result.msgs[i].sendDT := getJsonString(jSons[i],'sendDT');
                         result.msgs[i].result := getJsonInteger(jSons[i], 'result');
-                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDT');
                         result.msgs[i].contentType := getJsonString(jSons[i], 'contentType');
                         result.msgs[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
                         result.msgs[i].receiveName := getJsonString(jSons[i], 'receiveName');
@@ -1539,7 +1539,7 @@ begin
                         result.msgs[i].state := getJsonInteger(jSons[i],'state');
                         result.msgs[i].sendDT := getJsonString(jSons[i],'sendDT');
                         result.msgs[i].result := getJsonInteger(jSons[i], 'result');
-                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDt');
+                        result.msgs[i].resultDT := getJsonString(jSons[i], 'resultDT');
                         result.msgs[i].contentType := getJsonString(jSons[i], 'contentType');
                         result.msgs[i].receiveNum := getJsonString(jSons[i], 'receiveNum');
                         result.msgs[i].receiveName := getJsonString(jSons[i], 'receiveName');
