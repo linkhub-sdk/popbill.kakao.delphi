@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2021-03-08
+* Updated : 2021-06-14
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -50,10 +50,6 @@ type
         end;
 
         TKakaoSenderNumberList = Array of TKakaoSenderNumber;
-
-
-        
-
 
 
         // 전송요청 - 친구톡 버튼 정보
@@ -175,6 +171,9 @@ type
                 // 발신번호 목록 확인
                 function GetSenderNumberList(CorpNum: String; UserID : String = '') : TKakaoSenderNumberList;
 
+                // 알림톡 템플릿 정보 확인
+                function GetATSTemplate(CorpNum : String; templateCode : String; UserID : String = '') : TATSTemplate;
+                
                 // 알림톡 템플릿 목록 확인
                 function ListATSTemplate(CorpNum : String; UserID : String = '') : TATSTemplateList;
 
@@ -476,6 +475,92 @@ begin
         end;
 end;
 
+// 알림톡 템플릿 정보확인
+function TKakaoService.GetATSTemplate(CorpNum : String; templateCode : String; UserID : String = '') : TATSTemplate;
+var
+        responseJson : String;
+        btnjSons : ArrayOfString;
+        i : Integer;
+
+begin
+        if templateCode = '' then
+        begin
+                  if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999,'템플릿코드가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result := TATSTemplate.Create;
+                        setLastErrCode(-99999999);
+                        setLastErrMessage('템플릿코드가 입력되지 않았습니다');
+                        exit;
+                end;
+        end;
+        try
+                responseJson := httpget('/KakaoTalk/GetATSTemplate/'+templateCode, CorpNum, UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code,le.message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result := TATSTemplate.Create;
+                                exit;
+                        end;
+                end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                exit;
+        end
+        else
+        begin
+
+                try
+                        result := TATSTemplate.Create;
+                        result.templateCode := getJsonString(responseJson, 'templateCode');
+                        result.templateName := getJsonString(responseJson, 'templateName');
+                        result.template := getJsonString(responseJson, 'template');
+                        result.plusFriendID := getJsonString(responseJson, 'plusFriendID');
+
+                        // 알림톡 템플릿 버튼
+                        btnjSons := getJSonList(responseJson, 'btns');
+                        SetLength(result.btns, Length(btnjSons));
+
+                        for i:= 0 to Length(btnjSons)-1 do
+                        begin
+                                result.btns[i] := TSendKakaoButton.Create;
+                                result.btns[i].buttonName := getJSonString(btnjSons[i],'n');
+                                result.btns[i].buttonType := getJSonString(btnjSons[i],'t');
+                                result.btns[i].buttonURL1 := getJSonString(btnjSons[i],'u1');
+                                result.btns[i].buttonURL2 := getJSonString(btnjSons[i],'u2');
+                        end;
+                        SetLength(btnjSons,0);
+                except
+                        on E:Exception do begin
+                                if FIsThrowException then
+                                begin
+                                        raise EPopbillException.Create(-99999999,'결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end
+                                else
+                                begin
+                                        result := TATSTemplate.Create();
+                                        setLastErrCode(-99999999);
+                                        setLastErrMessage('결과처리 실패.[Malformed Json]');
+                                        exit;
+                                end;
+                        end;
+                end;
+        end;
+end;
+
 // 알림톡 템플릿 목록 확인
 function TKakaoService.ListATSTemplate(CorpNum : String; UserID : String = '') : TATSTemplateList;
 var
@@ -555,7 +640,7 @@ begin
         end;
         end;
 end;
-               
+
 // 예약전송 취소
 function TKakaoService.CancelReserve(CorpNum : String; receiptNum : String; UserID : String = '') : TResponse;
 var
