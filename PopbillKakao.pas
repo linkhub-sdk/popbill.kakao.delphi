@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhub.co.kr)
 * Written : 2018-02-26
-* Updated : 2021-06-14
+* Updated : 2021-06-17
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -1137,7 +1137,7 @@ begin
                                '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
                                '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
 
-                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                        if j < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
                 end;
 
                 requestJson := requestJson + '],';                
@@ -1280,7 +1280,7 @@ begin
                                '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
                                '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
 
-                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                        if j < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
                 end;
 
                 requestJson := requestJson + '],';                
@@ -1428,7 +1428,7 @@ begin
                                '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
                                '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
 
-                        if i < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
+                        if j < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
                 end;
 
                 requestJson := requestJson + '],';                
