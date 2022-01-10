@@ -141,6 +141,8 @@ type
                 templateName : String;
                 template : string;
                 plusFriendID : string;
+                ads : string;
+                appendix : string;
                 btns : TSendKakaoButtonList;
         end;
 
@@ -528,6 +530,8 @@ begin
                         result.templateName := getJsonString(responseJson, 'templateName');
                         result.template := getJsonString(responseJson, 'template');
                         result.plusFriendID := getJsonString(responseJson, 'plusFriendID');
+                        result.ads := getJsonString(responseJson, 'ads');
+                        result.appendix := getJsonString(responseJson, 'appendix');
 
                         // ¾Ë¸²Åå ÅÛÇÃ¸´ ¹öÆ°
                         btnjSons := getJSonList(responseJson, 'btns');
@@ -605,6 +609,8 @@ begin
                         result[i].templateName := getJsonString(jSons[i], 'templateName');
                         result[i].template := getJsonString(jSons[i], 'template');
                         result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
+                        result[i].ads := getJsonString(jSons[i], 'ads');
+                        result[i].appendix := getJsonString(jSons[i], 'appendix');
 
                         // ¾Ë¸²Åå ÅÛÇÃ¸´ ¹öÆ°
                         btnjSons := getJSonList(jSons[i], 'btns');
