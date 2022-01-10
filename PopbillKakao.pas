@@ -22,7 +22,7 @@ type
         // ATS-알림톡, FTS-친구톡, FMS-친구톡 이미지
         EnumKakaoType = (ATS,FTS,FMS);
 
-        // 플러스친구 정보
+        // 카카오톡 채널 정보
         TPlusFriendInfo = class
         public
                 plusFriendID : string;
@@ -155,7 +155,7 @@ type
                 // GetURL
                 function GetURL(CorpNum : String; TOGO: String; UserID: String = '') : String;
 
-                // 플러스친구 계정관리 팝업 URL
+                // 카카오톡 채널 관리 팝업 URL
                 function GetPlusFriendMgtURL(CorpNum : String; UserID: String) : String;
 
                 // 발신번호 관리 팝업 URL
@@ -167,7 +167,7 @@ type
                 // 카카오톡 전송내역 팝업 URL
                 function GetSentListURL(CorpNum : String; UserID: String) : String;
 
-                // 플러스친구 목록 확인
+                // 카카오톡 채널 목록 확인
                 function ListPlusFriendID(CorpNum : String; UserID : String = '') : TPlusFriendList;
 
                 // 발신번호 목록 확인
@@ -275,7 +275,7 @@ begin
         end;
 end;
 
-// 플러스친구 계정관리 팝업 URL
+// 카카오톡 채널 관리 팝업 URL
 function TKakaoService.GetPlusFriendMgtURL(CorpNum : String; UserID : String) : string;
 var
         responseJson : String;
@@ -351,7 +351,7 @@ begin
         end;
 end;
 
-// 플러스친구 계정 목록
+// 카카오톡 채널 목록 확인
 function TKakaoService.ListPlusFriendID(CorpNum : String; UserID : String = '') : TPlusFriendList;
 var
         responseJson : String;
