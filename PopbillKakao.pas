@@ -28,6 +28,8 @@ type
                 plusFriendID : string;
                 plusFriendName : string;
                 regDT : string;
+                state : string;
+                stateDT : string;
         end;
 
         TPlusFriendList = Array of TPlusFriendInfo;
@@ -413,6 +415,8 @@ begin
                                 result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
                                 result[i].plusFriendName := getJsonString(jSons[i], 'plusFriendName');
                                 result[i].regDT := getJsonString(jSons[i], 'regDT');
+                                result[i].state := getJsonString(jSons[i], 'state');
+                                result[i].stateDT := getJsonString(jSons[i], 'stateDT');
                         end;
                 except
                         on E:Exception do begin
