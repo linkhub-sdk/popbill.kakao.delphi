@@ -184,6 +184,8 @@ type
                 // 알림톡 템플릿 목록 확인
                 function ListATSTemplate(CorpNum : String; UserID : String = '') : TATSTemplateList;
 
+                // 발신번호 등록여부 확인
+                function CheckSenderNumber(CorpNum : String; SenderNumber : String; UserID : String = '') : TResponse;
 
 
                 // 알림톡 전송(단건)
@@ -669,6 +671,57 @@ begin
                 end;
 
         end;
+        end;
+end;
+
+function TKakaoService.CheckSenderNumber(CorpNum : String; SenderNumber : String; UserID : String = '') : TResponse;
+var
+        responseJson : String;
+begin
+        if SenderNumber = '' then
+        begin
+                if FIsThrowException then
+                begin
+                        raise EPopbillException.Create(-99999999,'발신번호가 입력되지 않았습니다');
+                        exit;
+                end
+                else
+                begin
+                        result.code := -99999999;
+                        result.message := '발신번호가 입력되지 않았습니다';
+                        exit;
+                end;
+        end;
+        
+        try
+                responseJson := httpget('/KakaoTalk/CheckSenderNumber/'+SenderNumber,CorpNum,UserID);
+        except
+                on le : EPopbillException do begin
+                        if FIsThrowException then
+                        begin
+                                raise EPopbillException.Create(le.code, le.Message);
+                                exit;
+                        end
+                        else
+                        begin
+                                result.code := le.code;
+                                result.message := le.message;
+                                exit;
+                        end;
+                end;
+        end;
+
+        if LastErrCode <> 0 then
+        begin
+                result.code := LastErrCode;
+                result.message := LastErrMessage;
+                exit;
+        end
+        else
+        begin
+                result.code := getJsonInteger(responseJson,'code');
+                result.message := getJsonString(responseJson,'message');
+                exit;
         end;
 end;
 
