@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhubcorp.com)
 * Written : 2018-02-26
-* Updated : 2022-04-07
+* Updated : 2022-07-25
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -148,6 +148,9 @@ type
                 plusFriendID : string;
                 ads : string;
                 appendix : string;
+                secureYN : Boolean;
+                state : Integer;
+                stateDT : string;
                 btns : TSendKakaoButtonList;
         end;
 
@@ -559,6 +562,9 @@ begin
                         result.plusFriendID := getJsonString(responseJson, 'plusFriendID');
                         result.ads := getJsonString(responseJson, 'ads');
                         result.appendix := getJsonString(responseJson, 'appendix');
+                        result.secureYN := getJsonBoolean(responseJson, 'secureYN');
+                        result.state := StrtoInt(getJsonString(responseJson, 'state'));
+                        result.stateDT := getJsonString(responseJson, 'stateDT');
 
                         // ¾Ë¸²Åå ÅÛÇÃ¸´ ¹öÆ°
                         btnjSons := getJSonList(responseJson, 'btns');
@@ -638,7 +644,9 @@ begin
                         result[i].plusFriendID := getJsonString(jSons[i], 'plusFriendID');
                         result[i].ads := getJsonString(jSons[i], 'ads');
                         result[i].appendix := getJsonString(jSons[i], 'appendix');
-
+                        result[i].secureYN := getJsonBoolean(responseJson, 'secureYN');
+                        result[i].state := StrtoInt(getJsonString(responseJson, 'state'));
+                        result[i].stateDT := getJsonString(responseJson, 'stateDT');
                         // ¾Ë¸²Åå ÅÛÇÃ¸´ ¹öÆ°
                         btnjSons := getJSonList(jSons[i], 'btns');
                         SetLength(result[i].btns, Length(btnjSons));
