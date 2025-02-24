@@ -7,7 +7,7 @@
 * http://www.popbill.com
 * Author : Jeong Yohan (code@linkhubcorp.com)
 * Written : 2018-02-26
-* Updated : 2022-07-25
+* Updated : 2025-02-24
 * Thanks for your interest.
 *=================================================================================
 *)
@@ -61,6 +61,7 @@ type
                 buttonType : string;
                 buttonURL1 : string;
                 buttonURL2 : string;
+                buttonTG : string;
         end;
 
         TSendKakaoButtonList = Array Of TSendKakaoButton;
@@ -1255,7 +1256,8 @@ begin
                                '{"n":"'+EscapeString(Receivers[i].buttonList[j].buttonName)+'",'+
                                '"t":"'+EscapeString(Receivers[i].buttonList[j].buttonType)+'",'+
                                '"u1":"'+EscapeString(Receivers[i].buttonList[j].buttonURl1)+'",'+
-                               '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'"}';
+                               '"u2":"'+EscapeString(Receivers[i].buttonList[j].buttonURL2)+'",'+
+                               '"tg":"'+EscapeString(Receivers[i].buttonList[j].buttonTG)+'"}';
 
                         if j < Length(Receivers[i].buttonList) - 1 then requestJson := requestJson + ',';
                 end;
@@ -1277,7 +1279,8 @@ begin
                                 '{"n":"'+EscapeString(Buttons[i].buttonName)+'",'+
                                 '"t":"'+EscapeString(Buttons[i].buttonType)+'",'+
                                 '"u1":"'+EscapeString(Buttons[i].buttonURl1)+'",'+
-                                '"u2":"'+EscapeString(Buttons[i].buttonURL2)+'"}';
+                                '"u2":"'+EscapeString(Buttons[i].buttonURL2)+'",'+
+                                '"tg":"'+EscapeString(Buttons[i].buttonTG)+'"}';
 
                         if i < Length(Buttons) - 1 then requestJson := requestJson + ',';
                 end;
